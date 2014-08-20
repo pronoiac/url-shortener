@@ -20,4 +20,12 @@ class User < ActiveRecord::Base
     through: :visits,
     source: :shortened_url
   )
+  
+  has_many(
+    :unique_visited_urls,
+    -> { distinct },
+    through: :visits,
+    source: :shortened_url
+  )
+  
 end

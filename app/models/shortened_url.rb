@@ -24,13 +24,11 @@ class ShortenedUrl < ActiveRecord::Base
   end
   
   def num_uniques
-    visits.select(:visitor_id).distinct.count
+    unique_visitors.count
   end
   
   def num_recent_uniques
-    visits.select(:visitor_id).distinct.where(
-      'visits.created_at > ?', 10.minutes.ago
-    ).count
+    unique_visitors.where('visits.created_at > ?', 10.minutes.ago).count
   end
   
   belongs_to(
@@ -49,6 +47,13 @@ class ShortenedUrl < ActiveRecord::Base
   
   has_many(
     :visitors,
+    through: :visits,
+    source: :visitor
+  )
+  
+  has_many(
+    :unique_visitors,
+    -> { distinct },
     through: :visits,
     source: :visitor
   )
