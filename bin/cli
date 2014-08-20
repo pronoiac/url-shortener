@@ -1,9 +1,16 @@
 #!/usr/bin/env ruby
 
-ACTIONS = {
+ACTION_PROMPTS = {
   1 => 'Create shortened URL',
   2 => 'Visit shortened URL'
 }
+
+ACTIONS = {
+  1 => :create_url,
+  2 => :visit_url
+}
+
+$USER = nil
 
 def prompt_login
   print "Input your email: "
@@ -15,13 +22,13 @@ def log_in(email)
 end
 
 def action_valid?(arg)
-  ACTIONS.keys.include? arg
+  ACTION_PROMPTS.keys.include? arg
 end
 
 def prompt_action
   while true
     puts "What do you want to do?"
-    ACTIONS.each do |id, prompt|
+    ACTION_PROMPTS.each do |id, prompt|
       puts "#{id}. #{prompt}"
     end      
     choice = gets.chomp.to_i
@@ -30,17 +37,48 @@ def prompt_action
   end    
 end
 
+def prompt_create_url
+  print "Type in your long URL: "
+  gets.chomp
+end
+
+def prompt_visit_url
+  print "Type in the shortened URL: "
+  gets.chomp
+end
+
+def create_url
+  begin
+    url = prompt_create_url
+  end while url.empty?
+  
+  shortened = ShortenedUrl.create_for_user_and_long_url!($USER, url)
+  
+  puts "Short URL is #{shortened.short_url}."
+end
+
+def visit_url
+  begin
+    url = prompt_visit_url
+  end while url.empty?
+  
+  shortened = ShortenedUrl.find(:first, :conditions => ["short_url = ?", url])
+  
+  Launchy.open(shortened.long_url)
+end
 
 def ui
   loop do
-    user = log_in(prompt_login)
+    $USER = log_in(prompt_login)
     
-    break unless user.nil?
+    break unless $USER.nil?
     
     puts "Email address not found!"
   end
   
   action = prompt_action
+  
+  self.send(ACTIONS[action])
 end
 
 ui
