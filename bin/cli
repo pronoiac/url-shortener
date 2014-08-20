@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby
+
+ACTIONS = {
+  1 => 'Create shortened URL',
+  2 => 'Visit shortened URL'
+}
+
+def prompt_login
+  print "Input your email: "
+  gets.chomp
+end
+
+def log_in(email)
+  User.find(:first, :conditions => ["email = ?", email])
+end
+
+def action_valid?(arg)
+  ACTIONS.keys.include? arg
+end
+
+def prompt_action
+  while true
+    puts "What do you want to do?"
+    ACTIONS.each do |id, prompt|
+      puts "#{id}. #{prompt}"
+    end      
+    choice = gets.chomp.to_i
+    return choice if action_valid?(choice)
+    puts "Invalid choice!\n\n"
+  end    
+end
+
+
+def ui
+  loop do
+    user = log_in(prompt_login)
+    
+    break unless user.nil?
+    
+    puts "Email address not found!"
+  end
+  
+  action = prompt_action
+end
+
+ui
