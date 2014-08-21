@@ -18,7 +18,8 @@ def prompt_login
 end
 
 def log_in(email)
-  User.find(:first, :conditions => ["email = ?", email])
+  # User.find(:first, :conditions => ["email = ?", email])
+  User.find_by(email: email)
 end
 
 def action_valid?(arg)

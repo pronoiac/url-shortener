@@ -1,37 +1,9 @@
 class ShortenedUrl < ActiveRecord::Base
   validates :short_url, presence: true, uniqueness: true
-  validates :long_url, presence: true
-  validates :submitter_id, presence: true
+  validates :long_url, :submitter, presence: true
   validates :long_url, length: { maximum: 1024 }
   
   validate :cannot_submit_more_than_5_in_one_minute
-  
-  def self.random_code
-    begin
-      code = SecureRandom::urlsafe_base64
-    end while ShortenedUrl.exists?(short_url: code)
-    code
-  end
-  
-  def self.create_for_user_and_long_url!(user, long_url)
-    ShortenedUrl.create!(
-      :submitter_id => user.id, 
-      :long_url => long_url, 
-      :short_url => ShortenedUrl.random_code
-    )
-  end
-  
-  def num_clicks
-    visits.count
-  end
-  
-  def num_uniques
-    unique_visitors.count
-  end
-  
-  def num_recent_uniques
-    unique_visitors.where('visits.created_at > ?', 10.minutes.ago).count
-  end
   
   belongs_to(
     :submitter,
@@ -74,6 +46,33 @@ class ShortenedUrl < ActiveRecord::Base
     source: :tag_topic
   )
   
+  def self.random_code
+    begin
+      code = SecureRandom::urlsafe_base64
+    end while ShortenedUrl.exists?(short_url: code)
+    code
+  end
+  
+  def self.create_for_user_and_long_url!(user, long_url)
+    ShortenedUrl.create!(
+      :submitter_id => user.id, 
+      :long_url => long_url, 
+      :short_url => ShortenedUrl.random_code
+    )
+  end
+  
+  def num_clicks
+    visits.count
+  end
+  
+  def num_uniques
+    unique_visitors.count
+  end
+  
+  def num_recent_uniques
+    unique_visitors.where('visits.created_at > ?', 10.minutes.ago).count
+  end
+
   private
   
   def cannot_submit_more_than_5_in_one_minute

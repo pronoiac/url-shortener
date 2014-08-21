@@ -1,6 +1,6 @@
 class Visit < ActiveRecord::Base
-  validates :visitor_id, presence: true
-  validates :url_id, presence: true
+  validates :visitor, presence: true
+  validates :shortened_url, presence: true
   
   def self.record_visit!(user, shortened_url)
     Visit.create!(
