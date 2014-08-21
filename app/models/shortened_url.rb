@@ -2,7 +2,9 @@ class ShortenedUrl < ActiveRecord::Base
   validates :short_url, presence: true, uniqueness: true
   validates :long_url, presence: true
   validates :submitter_id, presence: true
-  #validates [:submitter_id, :long_url], uniqueness: true
+  validates :long_url, length: { maximum: 1024 }
+  
+  validate :cannot_submit_more_than_5_in_one_minute
   
   def self.random_code
     begin
@@ -71,4 +73,16 @@ class ShortenedUrl < ActiveRecord::Base
     through: :taggings,
     source: :tag_topic
   )
+  
+  private
+  
+  def cannot_submit_more_than_5_in_one_minute
+    user = User.find(submitter_id)
+    count = user.submitted_urls.where(
+      'shortened_urls.created_at > ?', 1.minutes.ago).count
+      
+    if count >= 5
+      errors[:base] << "can't submit more than 5 URLs in one minute"
+    end
+  end
 end
